@@ -41,6 +41,7 @@
 #include <linux/mfd/acer_picasso_ec.h>
 #include <linux/nct1008.h>
 #include <linux/rfkill-gpio.h>
+#include <linux/switch.h>
 
 #include <mach/iomap.h>
 #include <mach/irqs.h>
@@ -563,13 +564,6 @@ static struct gpio_keys_button picasso_keys[] = {
 		.type = EV_SW,
 		.debounce_interval = 10,
 	},
-	{
-		.code = SW_DOCK,
-		.gpio = PICASSO_GPIO_SWITCH_DOCK,
-		.desc = "Dock Switch",
-		.type = EV_SW,
-		.debounce_interval = 10,
-	},
 };
 
 static struct gpio_keys_platform_data picasso_keys_platform_data = {
@@ -584,6 +578,48 @@ static struct platform_device picasso_keys_device = {
 		.platform_data	= &picasso_keys_platform_data,
 	},
 };
+
+/******************************************************************************
+ * GPS
+ *****************************************************************************/
+static int __init picasso_gps_init(void)
+{
+	struct clk *clk32 = clk_get_sys(NULL, "blink");
+	if (!IS_ERR(clk32)) {
+		clk_set_rate(clk32,clk32->parent->rate);
+		clk_enable(clk32);
+	}
+
+	tegra_gpio_enable(TEGRA_GPIO_PZ3);
+	return 0;
+}
+
+/******************************************************************************
+ * Docking and switches
+ *****************************************************************************/
+#ifdef CONFIG_DOCK
+static struct gpio_switch_platform_data dock_switch_platform_data = {
+	.gpio = PICASSO_GPIO_SWITCH_DOCK,
+};
+
+static struct platform_device dock_switch = {
+	.name   = "acer-dock",
+	.id     = -1,
+	.dev    = {
+		.platform_data  = &dock_switch_platform_data,
+	},
+};
+
+static void dockin_init(void)
+{
+	platform_device_register(&tegra_uartd_device);
+
+	tegra_gpio_enable(TEGRA_GPIO_PR0);
+	tegra_gpio_enable(TEGRA_GPIO_PR1);
+
+	pr_info("Init dock uart device!\n");
+}
+#endif
 
 /******************************************************************************
  * Bluetooth rfkill
@@ -662,7 +698,9 @@ static void __init picasso_suspend_init(void) {
  * Platform devices
  *****************************************************************************/
 static struct platform_device *picasso_devices[] __initdata = {
+#ifndef CONFIG_DOCK
 	&debug_uart,
+#endif
 	&tegra_uartb_device,
 	&tegra_uartc_device,
 	&tegra_pmu_device,
@@ -711,12 +749,19 @@ static void __init tegra_picasso_init(void)
 
 	platform_add_devices(picasso_devices, ARRAY_SIZE(picasso_devices));
 
+#ifdef CONFIG_DOCK
+	dockin_init();
+	platform_device_register(&dock_switch);
+	tegra_gpio_enable(PICASSO_GPIO_HP_DET_DOCK);
+#endif
+
 	tegra_limit_wifi_clock();
 	picasso_emc_init();
 	picasso_i2c_init();
 	picasso_sensors_init();
 	picasso_regulator_init();
 	picasso_usb_init();
+	picasso_gps_init();
 
 	if(machine_is_picasso())
 		picasso_panel_init();

@@ -105,6 +105,7 @@
  * the partition tables happens after init too.
  */
 static int force_gpt;
+static u64 force_gpt_sector;
 static int __init
 force_gpt_fn(char *str)
 {
@@ -113,6 +114,12 @@ force_gpt_fn(char *str)
 }
 __setup("gpt", force_gpt_fn);
 
+static int __init force_gpt_sector_fn(char *str)
+{
+	force_gpt_sector = simple_strtoull(str, NULL, 0);
+	return 1;
+}
+__setup("gpt_sector=", force_gpt_sector_fn);
 
 /**
  * efi_crc32() - EFI version of crc32 function
@@ -546,6 +553,9 @@ static int find_valid_gpt(struct parsed_partitions *state, gpt_header **gpt,
 					 &agpt, &aptes);
         if (!good_agpt && force_gpt)
                 good_agpt = is_gpt_valid(state, lastlba, &agpt, &aptes);
+
+	if (!good_agpt && force_gpt && force_gpt_sector)
+		good_agpt = is_gpt_valid(state, force_gpt_sector, &agpt, &aptes);
 
         /* The obviously unsuccessful case */
         if (!good_pgpt && !good_agpt)

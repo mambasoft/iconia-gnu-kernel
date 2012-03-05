@@ -273,6 +273,16 @@ static int picasso_battery_resume(struct platform_device *pdev)
 #define picasso_battery_resume NULL
 #endif
 
+u16 picasso_battery_get_boardid(void)
+{
+	s32 ret;
+	u16 cur;
+	ret = picasso_battery_read_register(EC_BOARDID);
+	cur = ret & 0x0000ffff;
+	return cur;
+}
+EXPORT_SYMBOL(picasso_battery_get_boardid);
+
 static struct platform_driver picasso_battery_driver = {
 	.probe = picasso_battery_probe,
 	.remove = picasso_battery_remove,

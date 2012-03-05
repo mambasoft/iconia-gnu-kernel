@@ -22,6 +22,7 @@ enum picasso_ec_reg {
 
 	EC_VER_MAJOR = 0x30,
 	EC_VER_MINOR = 0x31,
+	EC_BOARDID = 0x32,
 
 	EC_LED_RESET = 0x40, //Let EC manage charging/standby LED state
 	EC_LED_OFF = 0x41,
@@ -29,6 +30,7 @@ enum picasso_ec_reg {
 	EC_LED_ORANGE = 0x43,
 
 	EC_SYS_SHUTDOWN = 0x52,
+	EC_SYS_RESTART_WARM = 0x54,
 	EC_SYS_RESTART = 0x55,
 };
 

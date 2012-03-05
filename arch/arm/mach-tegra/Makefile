@@ -67,4 +67,5 @@ obj-${CONFIG_MACH_PICASSO}		+= board-picasso.o
 obj-${CONFIG_MACH_PICASSO}		+= board-picasso-pinmux.o
 obj-${CONFIG_MACH_PICASSO}		+= board-picasso-power.o
 obj-${CONFIG_MACH_PICASSO}		+= board-seaboard-panel.o
+obj-${CONFIG_MACH_PICASSO}		+= board-picasso-sensors.o
 obj-${CONFIG_MACH_PICASSO}		+= board-picasso-memory.o

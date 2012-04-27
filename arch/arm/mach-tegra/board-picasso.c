@@ -551,7 +551,7 @@ static struct gpio_keys_button picasso_keys[] = {
 		.debounce_interval = 10,
 	},
 	{
-		.code = SW_RFKILL_ALL,
+		.code = SW_ROTATE_LOCK,
 		.gpio = PICASSO_GPIO_SWITCH_LOCK,
 		.desc = "Lock Switch",
 		.type = EV_SW,

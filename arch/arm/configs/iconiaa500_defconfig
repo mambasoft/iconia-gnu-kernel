@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # Linux/arm 2.6.38.3 Kernel Configuration
-# Fri Apr 27 15:12:07 2012
+# Mon May  7 15:02:13 2012
 #
 CONFIG_ARM=y
 CONFIG_HAVE_PWM=y
@@ -2249,7 +2249,7 @@ CONFIG_STAGING=y
 # CONFIG_ECHO is not set
 CONFIG_BRCMUTIL=m
 CONFIG_BRCMFMAC=m
-CONFIG_BRCMDBG=y
+# CONFIG_BRCMDBG is not set
 # CONFIG_RT2870 is not set
 # CONFIG_COMEDI is not set
 # CONFIG_ASUS_OLED is not set

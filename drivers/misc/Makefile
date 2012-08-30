@@ -43,4 +43,3 @@ obj-$(CONFIG_PCH_PHUB)		+= pch_phub.o
 obj-y				+= ti-st/
 obj-$(CONFIG_AB8500_PWM)	+= ab8500-pwm.o
 obj-$(CONFIG_SENSORS_NCT1008)	+= nct1008.o
-obj-$(CONFIG_AL3000A_LIGHT_SENSOR)	+= al3000a.o

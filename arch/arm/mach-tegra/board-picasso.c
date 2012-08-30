@@ -41,7 +41,6 @@
 #include <linux/mfd/acer_picasso_ec.h>
 #include <linux/nct1008.h>
 #include <linux/rfkill-gpio.h>
-#include <linux/switch.h>
 
 #include <mach/gpio.h>
 #include <mach/iomap.h>
@@ -69,7 +68,6 @@
 /******************************************************************************
  * Debug Serial
  *****************************************************************************/
-#ifndef CONFIG_DOCK
 static struct plat_serial8250_port debug_uart_platform_data[] = {
 	{
 		.membase	= IO_ADDRESS(TEGRA_UARTD_BASE),
@@ -91,7 +89,6 @@ static struct platform_device debug_uart = {
 		.platform_data = debug_uart_platform_data,
 	},
 };
-#endif
 
 /******************************************************************************
  * USB
@@ -492,7 +489,18 @@ static struct i2c_board_info __initdata picasso_ec = {
 	I2C_BOARD_INFO(PICASSO_EC_ID, 0x58),
 };
 
-static void __init picasso_sensors0_init(void) {
+static struct i2c_board_info __initdata tf101_asusec[] = {
+	{
+		I2C_BOARD_INFO("asusec", 0x19),
+		.irq = TEGRA_GPIO_TO_IRQ(TEGRA_GPIO_PS2),
+	},
+	{
+		I2C_BOARD_INFO("bq20z45", 0x0B),
+	},
+};
+
+
+static void __init picasso_sensors_init(void) {
 	gpio_request(TEGRA_GPIO_NCT1008_THERM2_IRQ, "nct1008");
 	gpio_direction_input(TEGRA_GPIO_NCT1008_THERM2_IRQ);
 
@@ -502,18 +510,17 @@ static void __init picasso_sensors0_init(void) {
 	gpio_request(PICASSO_GPIO_KXTF9_IRQ, "kxtf9");
 	gpio_direction_input(PICASSO_GPIO_KXTF9_IRQ);
 	
-	i2c_register_board_info(2, &picasso_ec, 1);
+	if(machine_is_picasso())
+		i2c_register_board_info(2, &picasso_ec, 1);
+
+	if(machine_is_tf101())
+		i2c_register_board_info(2, tf101_asusec, ARRAY_SIZE(tf101_asusec));
 
 	i2c_register_board_info(4, picasso_i2c4_board_info,
 		ARRAY_SIZE(picasso_i2c4_board_info));
 
 	i2c_register_board_info(0, picasso_mpu, ARRAY_SIZE(picasso_mpu));
 }
-
-static struct platform_device tegra_camera = {
-	.name = "tegra_camera",
-	.id = -1,
-};
 
 /******************************************************************************
  * GPIO Keys
@@ -700,7 +707,6 @@ static struct platform_device *picasso_devices[] __initdata = {
 	&tegra_gart_device,
 	&tegra_aes_device,
 	&tegra_avp_device,
-	&tegra_camera,
 	&picasso_keys_device,
 	&tegra_i2s_device1,
 	&tegra_das_device,
@@ -809,23 +815,21 @@ static void __init tegra_picasso_init(void)
 #endif
 
 	tegra_limit_wifi_clock();
+	picasso_emc_init();
 	picasso_i2c_init();
+	picasso_sensors_init();
 	picasso_regulator_init();
 	picasso_usb_init();
 	picasso_gps_init();
-	picasso_sensors0_init();
-	picasso_sensors_init();
-	picasso_emc_init();
-	picasso_panel_init();
+
+	if(machine_is_picasso())
+		picasso_panel_init();
+
+	if(machine_is_tf101())
+		tf101_panel_init();
+
 	picasso_touch_init();
 	picasso_sound_init();
-#ifdef CONFIG_ROTATELOCK
-	tegra_gpio_enable(TEGRA_GPIO_PQ2);
-#endif
-#ifdef CONFIG_PSENSOR
-	// enable gpio for psensor
-	tegra_gpio_enable(TEGRA_GPIO_PC1);
-#endif
 }
 
 MACHINE_START(PICASSO, "picasso")

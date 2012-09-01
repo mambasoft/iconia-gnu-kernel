@@ -413,3 +413,44 @@ void __init ventana_pinmux_init(void)
 	update_pinmux(ventana_pinmux, ARRAY_SIZE(ventana_pinmux));
 	seaboard_common_pinmux_init();
 }
+
+#ifdef CONFIG_MACH_PICASSO
+#include "board-picasso.h"
+static struct tegra_gpio_table picasso_gpio_table[] = {
+	{ .gpio = TEGRA_GPIO_BACKLIGHT,	.enable = true },
+	{ .gpio = PICASSO_GPIO_ULPI_RESET,	.enable = true },
+	{ .gpio = TEGRA_GPIO_MXT_IRQ,	.enable = true },
+	{ .gpio = TEGRA_GPIO_VENTANA_TS_RST,	.enable = true },
+	{ .gpio = TEGRA_GPIO_AC_ONLINE,	.enable = true },
+	{ .gpio = TEGRA_GPIO_VENTANA_DISABLE_CHARGER,	.enable = true },
+	{ .gpio = PICASSO_GPIO_HP_DETECT,	.enable = true },
+	{ .gpio = PICASSO_GPIO_MIC_EN_INT,	.enable = true },
+	{ .gpio = TEGRA_GPIO_VENTANA_EN_MIC_EXT,	.enable = true },
+	{ .gpio = TEGRA_GPIO_WM8903_IRQ,	.enable = true },
+	{ .gpio = TEGRA_GPIO_NCT1008_THERM2_IRQ,	.enable = true },
+	{ .gpio = PICASSO_GPIO_KEY_nVOLUMEUP,	.enable = true },
+	{ .gpio = PICASSO_GPIO_KEY_nVOLUMEDOWN,	.enable = true },
+	{ .gpio = PICASSO_GPIO_KEY_POWER,	.enable = true },
+	{ .gpio = PICASSO_GPIO_KEY_POWER2,	.enable = true },
+	{ .gpio = PICASSO_GPIO_SWITCH_LOCK,	.enable = true },
+	{ .gpio = PICASSO_GPIO_SWITCH_DOCK,	.enable = true },
+	{ .gpio = TEGRA_GPIO_BT_RESET,	.enable = true },
+	{ .gpio = TEGRA_GPIO_WLAN_POWER,	.enable = true },
+	{ .gpio = TEGRA_GPIO_SD2_CD,	.enable = true },
+	{ .gpio = TEGRA_GPIO_SD2_POWER,	.enable = true },
+	{ .gpio = PICASSO_GPIO_GPS,	.enable = true },
+	{ .gpio = PICASSO_GPIO_MPU3050_IRQ, .enable = true },
+	{ .gpio = PICASSO_GPIO_KXTF9_IRQ, .enable = true },
+};
+
+void __init picasso_pinmux_init(void)
+{
+	wm8903_gpio_init();
+	update_pinmux(ventana_pinmux, ARRAY_SIZE(ventana_pinmux));
+	tegra_pinmux_config_table(seaboard_pinmux, ARRAY_SIZE(seaboard_pinmux));
+
+	tegra_drive_pinmux_config_table(seaboard_drive_pinmux,
+					ARRAY_SIZE(seaboard_drive_pinmux));
+	tegra_gpio_config(picasso_gpio_table, ARRAY_SIZE(picasso_gpio_table));
+}
+#endif

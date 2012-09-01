@@ -42,7 +42,6 @@
 #include <linux/nct1008.h>
 #include <linux/rfkill-gpio.h>
 
-#include <mach/gpio.h>
 #include <mach/iomap.h>
 #include <mach/irqs.h>
 #include <mach/pinmux.h>
@@ -156,20 +155,20 @@ static void __init picasso_usb_init(void) {
  *****************************************************************************/
 static __initdata struct tegra_clk_init_table picasso_clk_init_table[] = {
 	/* name		parent		rate		enabled */
+	{ "clk_m",	NULL,	12000000,	true},
+	{ "pll_c",	"clk_m",	600000000,	true},
+	{ "pll_p",	"clk_m",	216000000,	true},
+	{ "uartb",	"pll_p",	216000000,	true},
+	{ "uartc",	"pll_c",	600000000,	true},
 	{ "uartd",	"pll_p",	216000000,	true},
-	{ "uartc",	"pll_m",	600000000,	false},
-	{ "blink",	"clk_32k",	32768,		false},
-	{ "pll_p_out4",	"pll_p",	24000000,	true},
-	{ "pwm",	"clk_m",	12000000,	false},
-	{ "pll_a",	NULL,		56448000,	true},
+	{ "blink",	"clk_32k",	32768,		true},
+	{ "pll_a",	NULL,		11289600,	true},
 	{ "pll_a_out0",	NULL,		11289600,	true},
-	{ "cdev1",	"pll_a_out0",	0,		true},
-	{ "i2s1",	"pll_a_out0",	11289600,	false},
-	{ "i2s2",	"pll_a_out0",	11289600,	false},
-	{ "audio",	"pll_a_out0",	11289600,	false},
-	{ "audio_2x",	"audio",	22579200,	false},
+	{ "i2s1",	"pll_a_out0",	2822400,	true},
+	{ "i2s2",	"pll_a_out0",	11289600,	true},
+	{ "audio",	"pll_a_out0",	11289600,	true},
+	{ "audio_2x",	"audio",	22579200,	true},
 	{ "spdif_out",	"pll_a_out0",	5644800,	false},
-	{ "kbc",	"clk_32k",	32768,		true},
 	{ NULL,		NULL,		0,		0},
 };
 
@@ -737,68 +736,9 @@ static void __init tegra_limit_wifi_clock(void) {
 	}
 }
 
-static void __init sound_codec_gpio_init(int gpio, const char *name)
-{
-	/*
-	 * PINGROUP_SPIC contains two pins:
-	 * + PX2, DISABLE_CHRGR (output)
-	 * + PX3, wm8903 codec IRQ (input)
-	 * + PX3, max98095 codec IRQ (input)
-	 *
-	 * The pinmux module can only configure TRISTATE vs. NORMAL on
-	 * a per-group rather than per-pin basis. The group must be
-	 * NORMAL since at least one pin is an output.
-	 *
-	 * However, we must ensure that the codec IRQ is never driven,
-	 * since the codec itself is driving it, and we don't want
-	 * multiple drivers.
-	 *
-	 *To ensure this, configure PX3 as a GPIO here, and set is as
-	 * an input, before the pinmux table is written, which is when
-	 * the pins will be un-tristated.
-	 */
-	tegra_gpio_enable(gpio);
-	gpio_request(gpio, name);
-	gpio_direction_input(gpio);
-}
-
-static void __init wm8903_gpio_init(void)
-{
-	sound_codec_gpio_init(TEGRA_GPIO_WM8903_IRQ, "wm8903");
-}
-
-static struct tegra_gpio_table picasso_gpio_table[] = {
-	{ .gpio = TEGRA_GPIO_BACKLIGHT,	.enable = true },
-	{ .gpio = PICASSO_GPIO_ULPI_RESET,	.enable = true },
-	{ .gpio = TEGRA_GPIO_MXT_IRQ,	.enable = true },
-	{ .gpio = TEGRA_GPIO_VENTANA_TS_RST,	.enable = true },
-	{ .gpio = TEGRA_GPIO_AC_ONLINE,	.enable = true },
-	{ .gpio = TEGRA_GPIO_VENTANA_DISABLE_CHARGER,	.enable = true },
-	{ .gpio = PICASSO_GPIO_HP_DETECT,	.enable = true },
-	{ .gpio = PICASSO_GPIO_MIC_EN_INT,	.enable = true },
-	{ .gpio = TEGRA_GPIO_VENTANA_EN_MIC_EXT,	.enable = true },
-	{ .gpio = TEGRA_GPIO_WM8903_IRQ,	.enable = true },
-	{ .gpio = TEGRA_GPIO_NCT1008_THERM2_IRQ,	.enable = true },
-	{ .gpio = PICASSO_GPIO_KEY_nVOLUMEUP,	.enable = true },
-	{ .gpio = PICASSO_GPIO_KEY_nVOLUMEDOWN,	.enable = true },
-	{ .gpio = PICASSO_GPIO_KEY_POWER,	.enable = true },
-	{ .gpio = PICASSO_GPIO_KEY_POWER2,	.enable = true },
-	{ .gpio = PICASSO_GPIO_SWITCH_LOCK,	.enable = true },
-	{ .gpio = PICASSO_GPIO_SWITCH_DOCK,	.enable = true },
-	{ .gpio = TEGRA_GPIO_BT_RESET,	.enable = true },
-	{ .gpio = TEGRA_GPIO_WLAN_POWER,	.enable = true },
-	{ .gpio = TEGRA_GPIO_SD2_CD,	.enable = true },
-	{ .gpio = TEGRA_GPIO_SD2_POWER,	.enable = true },
-	{ .gpio = PICASSO_GPIO_GPS,	.enable = true },
-	{ .gpio = PICASSO_GPIO_MPU3050_IRQ, .enable = true },
-	{ .gpio = PICASSO_GPIO_KXTF9_IRQ, .enable = true },
-};
-
 static void __init tegra_picasso_init(void)
 {
-	wm8903_gpio_init();
 	picasso_pinmux_init();
-	tegra_gpio_config(picasso_gpio_table, ARRAY_SIZE(picasso_gpio_table));
 	tegra_clk_init_from_table(picasso_clk_init_table);
 	
 	tegra_sdhci_device1.dev.platform_data = &tegra_sdhci_platform_data1;

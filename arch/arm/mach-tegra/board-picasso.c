@@ -236,6 +236,15 @@ static struct i2c_board_info mxt_device_picasso = {
 	.irq = TEGRA_GPIO_TO_IRQ(TEGRA_GPIO_MXT_IRQ),
 };
 
+#if defined(CONFIG_TOUCHSCREEN_ATMEL_768E)
+static struct i2c_board_info __initdata atmel_mXT768e_i2c_info[] = {
+	{
+		I2C_BOARD_INFO("maXTouch", 0X4d),
+		.irq = TEGRA_GPIO_TO_IRQ(TEGRA_GPIO_MXT_IRQ),
+	},
+};
+#endif
+
 static struct i2c_board_info mxt_device_tf101 = {
 	I2C_BOARD_INFO("atmel_mxt_ts", 0x5b),
 	.platform_data = &mxt_platform_data,
@@ -253,6 +262,11 @@ static void __init picasso_touch_init(void) {
 
 	if(machine_is_picasso())
 		i2c_register_board_info(0, &mxt_device_picasso, 1);
+
+#if defined(CONFIG_TOUCHSCREEN_ATMEL_768E)
+	if(machine_is_picasso())
+		i2c_register_board_info(0, atmel_mXT768e_i2c_info, 1);
+#endif
 
 	if(machine_is_tf101())
 		i2c_register_board_info(0, &mxt_device_tf101, 1);
